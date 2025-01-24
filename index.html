@@ -3,119 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decryptor WebApp</title>
+  <title>Advanced Decryptor</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
-      background-color: #f4f4f4;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f2f5;
     }
     .container {
-      width: 90%;
-      max-width: 600px;
-      background: #ffffff;
+      background-color: white;
       border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
     }
     h1 {
-      font-size: 1.5rem;
-      color: #333;
       text-align: center;
+      color: #333;
+      margin-bottom: 20px;
     }
-    textarea, input, button {
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    textarea, input {
       width: 100%;
-      margin-top: 10px;
       padding: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
     button {
-      background-color: #007BFF;
-      color: #fff;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
       border: none;
+      border-radius: 4px;
       cursor: pointer;
-      transition: 0.3s;
+      transition: background-color 0.3s;
     }
     button:hover {
       background-color: #0056b3;
     }
-    .result {
+    #output {
       margin-top: 15px;
-      padding: 10px;
-      background-color: #e9f7e9;
-      border: 1px solid #d4e5d4;
-      border-radius: 5px;
-      color: #2e7d32;
-      word-wrap: break-word;
+      padding: 15px;
+      background-color: #e9f5e9;
+      border: 1px solid #c0e0c0;
+      border-radius: 4px;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Decryptor Tool</h1>
-    <label for="hexInput">Enter Revealed Hexadecimal:</label>
-    <textarea id="hexInput" rows="5" placeholder="Paste hexadecimal here..."></textarea>
-    
-    <label for="encryptedData">Enter Encrypted Data:</label>
-    <textarea id="encryptedData" rows="5" placeholder="Paste encrypted data here..."></textarea>
-    
-    <label for="key">Enter Key:</label>
-    <input type="text" id="key" placeholder="Enter decryption key...">
-    
-    <button onclick="decrypt()">Decrypt</button>
-    
-    <div id="output" class="result" style="display: none;"></div>
+    <h1>Decryption Utility</h1>
+    <div class="form-group">
+      <label for="hexInput">Hexadecimal Input:</label>
+      <textarea id="hexInput" rows="3" placeholder="Enter hex data..."></textarea>
+    </div>
+    <div class="form-group">
+      <label for="encryptedData">Encrypted Data:</label>
+      <textarea id="encryptedData" rows="3" placeholder="Enter encrypted text..."></textarea>
+    </div>
+    <div class="form-group">
+      <label for="key">Decryption Key:</label>
+      <input type="text" id="key" placeholder="Enter decryption key">
+    </div>
+    <button onclick="processDecryption()">Decrypt</button>
+    <div id="output" class="hidden"></div>
   </div>
 
   <script>
-    // Function to decode hexadecimal into plain text
-    function decodeHex(hex) {
-      try {
-        let result = '';
-        for (let i = 0; i < hex.length; i += 2) {
-          result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    // Utility Functions
+    const utils = {
+      decodeHex: (hex) => {
+        try {
+          return hex.match(/.{1,2}/g)
+            .map(byte => String.fromCharCode(parseInt(byte, 16)))
+            .join('');
+        } catch {
+          return 'Invalid Hexadecimal';
         }
-        return result;
-      } catch (err) {
-        return 'Invalid hexadecimal input!';
+      },
+      validateInput: (...inputs) => inputs.every(input => input.trim() !== '')
+    };
+
+    // Decryption Logic
+    const decryptor = {
+      decrypt: (data, key) => {
+        // Placeholder decryption - replace with actual algorithm
+        return `Decrypted: ${data} (Key: ${key})`;
       }
-    }
+    };
 
-    // Dummy decrypt function (replace with actual algorithm if needed)
-    function decryptData(data, key) {
-      // Simulate decryption by just combining the key with data
-      return `Decrypted: ${data} (key: ${key})`;
-    }
+    // Main Processing Function
+    function processDecryption() {
+      const hexInput = document.getElementById('hexInput').value;
+      const encryptedData = document.getElementById('encryptedData').value;
+      const key = document.getElementById('key').value;
+      const output = document.getElementById('output');
 
-    // Main decrypt function
-    function decrypt() {
-      const hexInput = document.getElementById('hexInput').value.trim();
-      const encryptedData = document.getElementById('encryptedData').value.trim();
-      const key = document.getElementById('key').value.trim();
-
-      if (!hexInput || !encryptedData || !key) {
-        alert('Please fill in all fields.');
+      if (!utils.validateInput(hexInput, encryptedData, key)) {
+        alert('Please complete all fields.');
         return;
       }
 
-      // Decode the hex input
-      const decodedHex = decodeHex(hexInput);
+      try {
+        const decodedHex = utils.decodeHex(hexInput);
+        const decryptedResult = decryptor.decrypt(encryptedData, key);
 
-      // Decrypt data using key
-      const decryptedResult = decryptData(encryptedData, key);
-
-      // Display output
-      const outputDiv = document.getElementById('output');
-      outputDiv.style.display = 'block';
-      outputDiv.innerHTML = `<strong>${decodedHex}</strong><br>${decryptedResult}`;
+        output.innerHTML = `
+          <div><strong>Decoded Hex:</strong> ${decodedHex}</div>
+          <div>${decryptedResult}</div>
+        `;
+        output.classList.remove('hidden');
+      } catch (error) {
+        output.innerHTML = `Error: ${error.message}`;
+        output.classList.remove('hidden');
+      }
     }
   </script>
 </body>
