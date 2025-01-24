@@ -55,7 +55,17 @@
                 const hexRegex = /^[0-9a-fA-F]+$/;
                 const filteredHex = hiddenHex.match(hexRegex)?.[0] || "Hidden password not found.";
 
-                output.textContent = filteredHex;
+                // Convert hex to string (if valid)
+                let password = "Unable to decode password.";
+                if (filteredHex !== "Hidden password not found.") {
+                    try {
+                        password = decodeHexToString(filteredHex);
+                    } catch (err) {
+                        password = "Error decoding password.";
+                    }
+                }
+
+                output.innerHTML = `<strong>Hex:</strong> ${filteredHex}<br><strong>Password:</strong> ${password}`;
             };
 
             reader.onerror = function() {
@@ -64,6 +74,14 @@
 
             reader.readAsArrayBuffer(file);
         });
+
+        function decodeHexToString(hex) {
+            const bytes = [];
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes.push(parseInt(hex.substr(i, 2), 16));
+            }
+            return new TextDecoder().decode(new Uint8Array(bytes));
+        }
     </script>
 </body>
 </html>
