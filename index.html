@@ -3,135 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Advanced Decryptor</title>
+  <title>Hexadecimal Extractor</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      justify-content: center;
+      height: 100vh;
       margin: 0;
-      background-color: #f0f2f5;
+      background-color: #f9f9f9;
     }
     .container {
-      background-color: white;
+      width: 90%;
+      max-width: 600px;
+      background: #fff;
+      padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      padding: 30px;
-      width: 100%;
-      max-width: 500px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
     h1 {
+      font-size: 1.5rem;
       text-align: center;
-      color: #333;
       margin-bottom: 20px;
     }
-    .form-group {
+    input[type="file"] {
       margin-bottom: 15px;
-    }
-    label {
       display: block;
-      margin-bottom: 5px;
-      color: #555;
-    }
-    textarea, input {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
     }
     button {
       width: 100%;
-      padding: 12px;
-      background-color: #007bff;
+      padding: 10px;
+      background-color: #007BFF;
       color: white;
+      font-size: 1rem;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s;
+      margin-bottom: 15px;
     }
     button:hover {
       background-color: #0056b3;
     }
-    #output {
-      margin-top: 15px;
-      padding: 15px;
-      background-color: #e9f5e9;
-      border: 1px solid #c0e0c0;
-      border-radius: 4px;
-      word-break: break-word;
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: none;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Decryption Utility</h1>
-    <div class="form-group">
-      <label for="hexInput">Hexadecimal Input:</label>
-      <textarea id="hexInput" rows="3" placeholder="Enter hex data..."></textarea>
-    </div>
-    <div class="form-group">
-      <label for="encryptedData">Encrypted Data:</label>
-      <textarea id="encryptedData" rows="3" placeholder="Enter encrypted text..."></textarea>
-    </div>
-    <div class="form-group">
-      <label for="key">Decryption Key:</label>
-      <input type="text" id="key" placeholder="Enter decryption key">
-    </div>
-    <button onclick="processDecryption()">Decrypt</button>
-    <div id="output" class="hidden"></div>
+    <h1>Hexadecimal Extractor</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="extractHex()">Extract Hexadecimal</button>
+    <textarea id="hexOutput" readonly placeholder="Hexadecimal data will appear here..."></textarea>
   </div>
 
   <script>
-    // Utility Functions
-    const utils = {
-      decodeHex: (hex) => {
-        try {
-          return hex.match(/.{1,2}/g)
-            .map(byte => String.fromCharCode(parseInt(byte, 16)))
-            .join('');
-        } catch {
-          return 'Invalid Hexadecimal';
-        }
-      },
-      validateInput: (...inputs) => inputs.every(input => input.trim() !== '')
-    };
+    function extractHex() {
+      const fileInput = document.getElementById('fileInput');
+      const hexOutput = document.getElementById('hexOutput');
 
-    // Decryption Logic
-    const decryptor = {
-      decrypt: (data, key) => {
-        // Placeholder decryption - replace with actual algorithm
-        return `Decrypted: ${data} (Key: ${key})`;
-      }
-    };
-
-    // Main Processing Function
-    function processDecryption() {
-      const hexInput = document.getElementById('hexInput').value;
-      const encryptedData = document.getElementById('encryptedData').value;
-      const key = document.getElementById('key').value;
-      const output = document.getElementById('output');
-
-      if (!utils.validateInput(hexInput, encryptedData, key)) {
-        alert('Please complete all fields.');
+      if (!fileInput.files.length) {
+        alert('Please select a file.');
         return;
       }
 
-      try {
-        const decodedHex = utils.decodeHex(hexInput);
-        const decryptedResult = decryptor.decrypt(encryptedData, key);
+      const file = fileInput.files[0];
+      const reader = new FileReader();
 
-        output.innerHTML = `
-          <div><strong>Decoded Hex:</strong> ${decodedHex}</div>
-          <div>${decryptedResult}</div>
-        `;
-        output.classList.remove('hidden');
-      } catch (error) {
-        output.innerHTML = `Error: ${error.message}`;
-        output.classList.remove('hidden');
-      }
+      // Read file as binary
+      reader.onload = function (event) {
+        const binary = new Uint8Array(event.target.result);
+        let hexString = '';
+
+        // Convert each byte to hexadecimal
+        binary.forEach(byte => {
+          hexString += byte.toString(16).padStart(2, '0');
+        });
+
+        // Display the extracted hexadecimal in the textarea
+        hexOutput.value = hexString;
+      };
+
+      reader.onerror = function () {
+        alert('Error reading the file.');
+      };
+
+      // Read the file as an ArrayBuffer
+      reader.readAsArrayBuffer(file);
     }
   </script>
 </body>
