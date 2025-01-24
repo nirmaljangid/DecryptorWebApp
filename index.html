@@ -2,46 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hidden Password Extractor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Hidden Password</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; text-align: center; }
-        #fileInput { margin: 20px 0; }
-        #result { word-break: break-all; padding: 10px; background-color: #f0f0f0; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
-    <h1>Hidden Password Extractor</h1>
-    <input type="file" id="fileInput" accept="image/*">
-    <div id="result"></div>
+    <h1>Extract Hidden Password</h1>
+    <p>Select the image file containing the hidden password:</p>
+    <input type="file" id="fileInput" accept="image/jpeg, image/png">
+    <div class="output" id="output"></div>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', async (event) => {
+        document.getElementById('fileInput').addEventListener('change', function(event) {
             const file = event.target.files[0];
-            if (!file) return;
+            const output = document.getElementById('output');
 
-            try {
-                const fileText = await file.text();
-                const hexPassword = fileText.split('\n').pop(); // Assumes password is the last part
-                
-                const asciiPassword = hexToAscii(hexPassword);
-                
-                document.getElementById('result').innerHTML = `
-                    <h3>Extracted Password:</h3>
-                    <p>${asciiPassword}</p>
-                `;
-            } catch (error) {
-                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            if (!file) {
+                output.textContent = "No file selected.";
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const uint8Array = new Uint8Array(arrayBuffer);
+                const textDecoder = new TextDecoder();
+
+                // Assume the hidden password is in the last 2048 bytes of the file
+                const endBytes = uint8Array.slice(-2048);
+                const hiddenHex = textDecoder.decode(endBytes);
+
+                // Filter valid hex characters (in case of padding or unrelated data)
+                const hexRegex = /^[0-9a-fA-F]+$/;
+                const filteredHex = hiddenHex.match(hexRegex)?.[0] || "Hidden password not found.";
+
+                output.textContent = filteredHex;
+            };
+
+            reader.onerror = function() {
+                output.textContent = "Error reading the file.";
+            };
+
+            reader.readAsArrayBuffer(file);
         });
-
-        function hexToAscii(hex) {
-            let ascii = '';
-            for (let i = 0; i < hex.length; i += 2) {
-                const hexChar = hex.substr(i, 2);
-                ascii += String.fromCharCode(parseInt(hexChar, 16));
-            }
-            return ascii;
-        }
     </script>
 </body>
 </html>
