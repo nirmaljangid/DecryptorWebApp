@@ -49,7 +49,7 @@
     <div class="output" id="passwordOutput"></div>
 
     <h2>Step 2: Decrypt File</h2>
-    <p>Select the encrypted file and use the extracted password:</p>
+    <p>Select the encrypted file and use the extracted password as salt:</p>
     <input type="file" id="fileInput" accept=".txt">
     <button id="decryptButton">Decrypt File</button>
     <div class="output" id="decryptionOutput"></div>
@@ -107,9 +107,9 @@
             const arrayBuffer = await file.arrayBuffer();
             const uint8Array = new Uint8Array(arrayBuffer);
 
-            // Read the salt from the first 32 bytes
-            const salt = uint8Array.slice(0, 32);
-            const encryptedContent = uint8Array.slice(32);
+            // Read the salt from the extracted password
+            const salt = await deriveSaltFromPassword(password);
+            const encryptedContent = uint8Array;
 
             try {
                 const decryptedContent = await decryptFile(encryptedContent, password, salt);
@@ -126,6 +126,13 @@
                 decoded += String.fromCharCode(charCode);
             }
             return decoded;
+        }
+
+        async function deriveSaltFromPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+            return new Uint8Array(hashBuffer);
         }
 
         async function decryptFile(encryptedContent, password, salt) {
