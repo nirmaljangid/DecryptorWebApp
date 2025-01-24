@@ -1,106 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hexadecimal Extractor</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f9f9f9;
-    }
-    .container {
-      width: 90%;
-      max-width: 600px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      font-size: 1.5rem;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    input[type="file"] {
-      margin-bottom: 15px;
-      display: block;
-      width: 100%;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #007BFF;
-      color: white;
-      font-size: 1rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-bottom: 15px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    textarea {
-      width: 100%;
-      height: 150px;
-      padding: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      resize: none;
-      margin-bottom: 15px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Hidden Password Extractor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 20px auto; text-align: center; }
+        #fileInput { margin: 20px 0; }
+        #result { word-break: break-all; padding: 10px; background-color: #f0f0f0; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Hexadecimal Extractor</h1>
+    <h1>Hidden Password Extractor</h1>
     <input type="file" id="fileInput" accept="image/*">
-    <button onclick="extractHex()">Extract Hexadecimal</button>
-    <textarea id="hexOutput" readonly placeholder="Hexadecimal data will appear here..."></textarea>
-  </div>
+    <div id="result"></div>
 
-  <script>
-    function extractHex() {
-      const fileInput = document.getElementById('fileInput');
-      const hexOutput = document.getElementById('hexOutput');
+    <script>
+        document.getElementById('fileInput').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-      if (!fileInput.files.length) {
-        alert('Please select a file.');
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-
-      // Read file as binary
-      reader.onload = function (event) {
-        const binary = new Uint8Array(event.target.result);
-        let hexString = '';
-
-        // Convert each byte to hexadecimal
-        binary.forEach(byte => {
-          hexString += byte.toString(16).padStart(2, '0');
+            try {
+                const fileText = await file.text();
+                const hexPassword = fileText.split('\n').pop(); // Assumes password is the last part
+                
+                const asciiPassword = hexToAscii(hexPassword);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Extracted Password:</h3>
+                    <p>${asciiPassword}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
         });
 
-        // Display the extracted hexadecimal in the textarea
-        hexOutput.value = hexString;
-      };
-
-      reader.onerror = function () {
-        alert('Error reading the file.');
-      };
-
-      // Read the file as an ArrayBuffer
-      reader.readAsArrayBuffer(file);
-    }
-  </script>
+        function hexToAscii(hex) {
+            let ascii = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                const hexChar = hex.substr(i, 2);
+                ascii += String.fromCharCode(parseInt(hexChar, 16));
+            }
+            return ascii;
+        }
+    </script>
 </body>
 </html>
